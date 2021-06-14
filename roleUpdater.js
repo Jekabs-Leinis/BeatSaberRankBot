@@ -27,7 +27,7 @@ module.exports = {
 	async updateRoles(players, guild) {
 		// Create a dictionary of the rank groups and corresponding role objects
 		const rankRoles = {};
-		const guildRoles = guild.roles;
+		const guildRoles = guild.roles.cache;
 		for (const rolePair of guildRoles) {
 			const role = rolePair[1];
 			for (let p = 0; p < rankGroups.length; p++) {
@@ -49,7 +49,7 @@ module.exports = {
 			if (discordId === undefined) continue;
 
 			// Get their guildMemeber object
-			const guildMember = await guild.fetchMember(discordId).catch(() => {
+			const guildMember = await guild.members.fetch(discordId).catch(() => {
 
 				if (errorChannelId !== '' && errorChannelId !== undefined) {
 					const errorChannel = guild.channels.get(errorChannelId);
@@ -77,7 +77,7 @@ module.exports = {
 
 			// Removes rank roles they shouldn't have
 			for (const [rankRoleName, rankRole] of Object.entries(rankRoles)) {
-				if (guildMember.roles.some(role => role === rankRole) && rankRole.name !== rankGroup) {
+				if (guildMember.roles.cache.some(role => role === rankRole) && rankRole.name !== rankGroup) {
 					try {
 						await guildMember.removeRole(rankRole);
 						removedRole = rankRole;
@@ -89,9 +89,9 @@ module.exports = {
 			}
 
 			// Adds their current rank role if they don't already have it
-			if (!guildMember.roles.some(role => role.name === rankGroup) && rankGroup !== '') {
+			if (!guildMember.roles.cache.some(role => role.name === rankGroup) && rankGroup !== '') {
 				try {
-					await guildMember.addRole(rankRoles[rankGroup]);
+					await guildMember.roles.add(rankRoles[rankGroup]);
 					addedRole = rankRoles[rankGroup];
 					console.log(`Added role to ${guildMember.user.tag}: ${rankRoles[rankGroup].name}`);
 				} catch(err) {
@@ -129,7 +129,7 @@ module.exports = {
 		console.log('Updating global rank roles');
 		// Create a dictionary of the global rank groups and corresponding role objects
 		const globalRankRoles = {};
-		const guildRoles = guild.roles;
+		const guildRoles = guild.roles.cache;
 		for (const rolePair of guildRoles) {
 			const role = rolePair[1];
 			for (let p = 0; p < globalRankGroups.length; p++) {
@@ -177,7 +177,7 @@ module.exports = {
 
 			// Removes rank roles they shouldn't have
 			for (const [rankRoleName, rankRole] of Object.entries(globalRankRoles)) {
-				if (guildMember.roles.some(role => role === rankRole) && rankRole.name !== rankGroup) {
+				if (guildMember.roles.cache.some(role => role === rankRole) && rankRole.name !== rankGroup) {
 					try {
 						await guildMember.removeRole(rankRole);
 						console.log(`Removed role from ${guildMember.user.tag}: ${rankRoleName}`);
@@ -188,9 +188,9 @@ module.exports = {
 			}
 
 			// Adds their current rank role if they don't already have it
-			if (!guildMember.roles.some(role => role.name === rankGroup) && rankGroup !== '') {
+			if (!guildMember.roles.cache.some(role => role.name === rankGroup) && rankGroup !== '') {
 				try {
-					await guildMember.addRole(globalRankRoles[rankGroup]);
+					await guildMember.roles.add(globalRankRoles[rankGroup]);
 					console.log(`Added role to ${guildMember.user.tag}: ${globalRankRoles[rankGroup].name}`);
 				} catch(err) {
 					console.log(err);
@@ -214,10 +214,10 @@ module.exports = {
 		const regionalRoleName = roleMap[i][1];
 
 		// Adds their region role if they don't already have it
-		if (!guildMember.roles.some(role => role.name === regionalRoleName)) {
+		if (!guildMember.roles.cache.some(role => role.name === regionalRoleName)) {
 			try {
 				let regionalRole;
-				const guildRoles = guildMember.guild.roles;
+				const guildRoles = guildMember.guild.roles.cache;
 				for (const rolePair of guildRoles) {
 					const role = rolePair[1];
 					if (role.name === regionalRoleName) {
@@ -230,7 +230,7 @@ module.exports = {
 					return;
 				}
 
-				await guildMember.addRole(regionalRole);
+				await guildMember.roles.add(regionalRole);
 				console.log(`Added role to ${guildMember.user.tag}: ${regionalRole.name}`);
 
 			} catch(err) {
@@ -257,7 +257,7 @@ module.exports = {
 
 		// Create a dictionary of the rank groups and corresponding role objects
 		const rankRoles = {};
-		const guildRoles = guildMember.guild.roles;
+		const guildRoles = guildMember.guild.roles.cache;
 		for (const rolePair of guildRoles) {
 			const role = rolePair[1];
 			for (let p = 0; p < rankGroups.length; p++) {
@@ -283,7 +283,7 @@ module.exports = {
 
 		// Removes rank roles they shouldn't have
 		for (const [rankRoleName, rankRole] of Object.entries(rankRoles)) {
-			if (guildMember.roles.some(role => role === rankRole) && rankRole.name !== rankGroup) {
+			if (guildMember.roles.cache.some(role => role === rankRole) && rankRole.name !== rankGroup) {
 				try {
 					await guildMember.removeRole(rankRole);
 					console.log(`Removed role from ${guildMember.user.tag}: ${rankRoleName}`);
@@ -294,9 +294,9 @@ module.exports = {
 		}
 
 		// Adds their current rank role if they don't already have it
-		if (!guildMember.roles.some(role => role.name === rankGroup) && rankGroup !== '') {
+		if (!guildMember.roles.cache.some(role => role.name === rankGroup) && rankGroup !== '') {
 			try {
-				await guildMember.addRole(rankRoles[rankGroup]);
+				await guildMember.roles.add(rankRoles[rankGroup]);
 				console.log(`Added role to ${guildMember.user.tag}: ${rankRoles[rankGroup].name}`);
 			} catch(err) {
 				console.log(err);

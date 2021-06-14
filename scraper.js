@@ -2,7 +2,7 @@ const scoresaberRegion = require('./config.json').scoresaberRegion;
 const numPlayersToScrape = require('./config.json').numPlayersToScrape;
 const globalPagesToScrape = require('./config.json').globalPagesToScrape;
 const rp = require('request-promise');
-const $ = require('cheerio');
+const cheerio = require('cheerio');
 
 const headers = {
 	'user-agent': `${scoresaberRegion.toUpperCase()} Regional Discord Bot`,
@@ -21,6 +21,7 @@ module.exports = {
 				};
 				await rp(options)
 					.then(html => {
+						const $ = cheerio.load(html);
 						const rows = $('tr', html);
 						rows.each(function(n) {
 							if(n !== 0) {
@@ -50,6 +51,7 @@ module.exports = {
 				};
 				await rp(options)
 					.then(html => {
+						const $ = cheerio.load(html);
 						const rows = $('tr', html);
 						rows.each(function(n) {
 							if(n !== 0) {
@@ -76,6 +78,7 @@ module.exports = {
 		};
 		await rp(options)
 			.then(html => {
+				const $ = cheerio.load(html);
 				const ul = $('ul', html).slice(0, 1);
 				const li = $('li', ul).slice(0, 1);
 				const links = $('a', li);
@@ -100,6 +103,7 @@ module.exports = {
 		};
 		await rp(options)
 			.then(html => {
+				const $ = cheerio.load(html);
 				const ul = $('.columns .column:not(.is-narrow) ul', html)[0];
 
 				const rankingLi = $('strong:contains("Player Ranking:")', ul).parent().slice(0, 1);
@@ -141,6 +145,7 @@ module.exports = {
 		};
 		await rp(options)
 			.then(html => {
+				const $ = cheerio.load(html);
 				const rows = $('tr', html);
 
 				let playerRowNum;
