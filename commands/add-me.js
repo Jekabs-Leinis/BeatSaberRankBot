@@ -37,7 +37,7 @@ module.exports = {
 		scoresaber = scoresaber.replace(/[^a-z0-9/:.]/gi, '');
 
 		// Make sure the last charater isn't a slash
-		if (scoresaber.slice(-1) == '/') {
+		if (scoresaber.slice(-1) === '/') {
 			scoresaber = scoresaber.slice(0, -1);
 		}
 

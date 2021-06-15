@@ -34,7 +34,7 @@ module.exports = {
 					console.log(err);
 				});
 				if (discordId !== undefined) {
-					const user = await client.fetchUser(discordId);
+					const user = await client.user.fetch(discordId);
 
 					if (user === undefined) message.channel.send('ERROR: fetchUser returned undefined');
 
@@ -48,7 +48,7 @@ module.exports = {
 				let userId;
 				// Check if given user id
 				try {
-					await client.fetchUser(arg);
+					await client.user.fetch(arg);
 					userId = arg;
 				} catch(err) {
 					message.channel.send('Please use a valid scoresaber profile or user id.');
