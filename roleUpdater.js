@@ -28,17 +28,17 @@ function findRankRoles(guild) {
 function createMissingRoles(guild, existingRoles) {
     const missingRoles = Config.rankGroups.filter((group) => !existingRoles.has(group.name));
 
-    for (const roleName of missingRoles) {
+    for (const roleGroup of missingRoles) {
         guild.roles
             .create({
                 data: {
-                    name: roleName,
+                    name: roleGroup.name,
                     position: 1,
                     hoist: true,
                     mentionable: false,
                 },
             })
-            .then(() => console.log(`Created Role ${roleName}`));
+            .then(() => console.log(`Created Role ${roleGroup.name}`));
     }
 }
 
@@ -95,7 +95,7 @@ module.exports = {
             rankRoles.forEach((rankRole, rankRoleName) => {
                 if (guildMemberHasRole(guildMember, rankRole) && rankRoleName !== rankGroup.name) {
                     try {
-                        await guildMember.roles.remove(rankRole);
+                        guildMember.roles.remove(rankRole);
                         removedRole = rankRole;
                         console.log(`Removed role from ${guildMember.user.tag}: ${rankRoleName}`);
                     } catch (err) {
@@ -192,7 +192,7 @@ module.exports = {
             for (const [rankRoleName, rankRole] of Object.entries(globalRankRoles)) {
                 if (guildMember.roles.cache.some((role) => role === rankRole) && rankRole.name !== rankGroup) {
                     try {
-                        await guildMember.removeRole(rankRole);
+                        await guildMember.roles.remove(rankRole);
                         console.log(`Removed role from ${guildMember.user.tag}: ${rankRoleName}`);
                     } catch (err) {
                         console.log(err);
@@ -239,7 +239,7 @@ module.exports = {
                 }
 
                 if (regionalRole == null) {
-                    console.log(`Error adding role to ${guildMember.user.tag}: ${regionalRole.name}`);
+                    console.log(`Error adding role to ${guildMember.user.tag}`);
                     return;
                 }
 
@@ -297,7 +297,7 @@ module.exports = {
         for (const [rankRoleName, rankRole] of Object.entries(rankRoles)) {
             if (guildMember.roles.cache.some((role) => role === rankRole) && rankRole.name !== rankGroup) {
                 try {
-                    await guildMember.removeRole(rankRole);
+                    await guildMember.roles.remove(rankRole);
                     console.log(`Removed role from ${guildMember.user.tag}: ${rankRoleName}`);
                 } catch (err) {
                     console.log(err);
