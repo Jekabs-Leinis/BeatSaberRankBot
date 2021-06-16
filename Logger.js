@@ -1,7 +1,7 @@
 const errorChannelId = require("./config.json").errorChannelId;
 
-class Logger {
-	static errorToDiscord(message) {
+class DiscordLogger {
+	static logError(guild, message) {
 		console.error(message);
 
 		if (!errorChannelId) {
@@ -19,5 +19,5 @@ class Logger {
 }
 
 module.exports = {
-	Logger
-}
+	DiscordLogger
+};
