@@ -36,7 +36,7 @@ module.exports = {
 		// Idiot filter
 		scoresaber = scoresaber.replace(/[^a-z0-9/:.]/gi, '');
 
-		// Make sure the last charater isn't a slash
+		// Make sure the last character isn't a slash
 		if (scoresaber.slice(-1) === '/') {
 			scoresaber = scoresaber.slice(0, -1);
 		}
@@ -53,7 +53,7 @@ module.exports = {
 				db1.set(scoresaber, userId).then(() => {
 					db2.set(userId, scoresaber).then(() => {
 						message.channel.send('Added user.');
-						// Get their guildMemeber object and use it to add region and rank roles
+						// Get their guildMember object and use it to add region and rank roles
 						server.members.fetch(userId).then(guildMember => {
 							addRegionRole(scoresaber, guildMember);
 							addRankRole(scoresaber, guildMember);
