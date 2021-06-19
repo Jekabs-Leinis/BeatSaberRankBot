@@ -33,7 +33,7 @@ function createMissingRoles(guild, existingRoles) {
             .create({
                 data: {
                     name: roleGroup.name,
-                    position: 1,
+                    position: 1, //TODO: Put the role in the correct position
                     hoist: true,
                     mentionable: false,
                 },
@@ -44,6 +44,86 @@ function createMissingRoles(guild, existingRoles) {
 
 function guildMemberHasRole(guildMember, rankRole) {
     return guildMember.roles.cache.some((userRole) => userRole.id === rankRole.id);
+}
+
+function clearOtherRankGroups(guildMember, rankGroup, rankRoles) {
+    let removedRole;
+    rankRoles.forEach((rankRole, rankRoleName) => {
+        if (guildMemberHasRole(guildMember, rankRole) && rankRoleName !== rankGroup.name) {
+            try {
+                guildMember.roles.remove(rankRole);
+                removedRole = rankRole;
+                console.log(`Removed role from ${guildMember.user.tag}: ${rankRoleName}`);
+            } catch (err) {
+                console.log(err);
+            }
+        }
+    });
+
+    return removedRole;
+}
+
+async function setPlayerRankGroup(guildMember, rankGroup, rankRoles) {
+    let addedRole;
+    if (!guildMember.roles.cache.some((role) => role.name === rankGroup) && rankGroup !== '') {
+        try {
+            await guildMember.roles.add(rankRoles[rankGroup]);
+            addedRole = rankRoles[rankGroup];
+            console.log(`Added role to ${guildMember.user.tag}: ${rankRoles[rankGroup].name}`);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    return addedRole;
+}
+
+async function updatePlayerRoles(playerId, playerRank, guild, rankRoles) {
+    // Request the discord id of the individual with this Scoresaber profile from the database
+    const discordId = await scoresaberDb.get(playerId).catch((err) => {
+        console.log(err);
+    });
+
+    if (discordId === undefined) return;
+
+    // Get their guildMember object
+    const guildMember = await guild.members
+        .fetch(discordId)
+        .catch(() => discordLogger.logError(guild, `Could not find user <@${discordId}> with id ${discordId}`));
+
+    if (guildMember === undefined) return;
+
+    // Work out which rank group they fall under
+    let rankGroup = Config.rankGroups.find((group) => group.fromRank >= playerRank);
+
+    let removedRole = clearOtherRankGroups(guildMember, rankGroup, rankRoles);
+    // Adds their current rank role if they don't already have it
+    let addedRole = await setPlayerRankGroup(guildMember, rankGroup, rankRoles);
+
+    if (removedRole === undefined || addedRole === undefined) return;
+
+    let removedRoleIndex;
+    let addedRoleIndex;
+    for (let p = 0; p < rankGroups.length; p++) {
+        if (rankGroups[p].name === removedRole.name) {
+            removedRoleIndex = p;
+        }
+    }
+
+    for (let p = 0; p < rankGroups.length; p++) {
+        if (rankGroups[p][0] === addedRole.name) {
+            addedRoleIndex = p;
+        }
+    }
+
+    if (addedRoleIndex < removedRoleIndex) {
+        if (rankUpdateChannelId !== '' && rankUpdateChannelId !== undefined) {
+            const rankUpdateChannel = guild.channels.get(rankUpdateChannelId);
+            if (rankUpdateChannel !== undefined) {
+                rankUpdateChannel.send(`${guildMember.user.username} has advanced to ${addedRole.name}`);
+            }
+        }
+    }
 }
 
 module.exports = {
@@ -67,77 +147,9 @@ module.exports = {
         }
 
         for (let i = 0; i < playerIds.length; i++) {
-            const playerId = playerIds[i];
-            const rank = i + 1;
-
-            // Request the discord id of the individual with this Scoresaber profile from the database
-            const discordId = await scoresaberDb.get(playerId).catch((err) => {
-                console.log(err);
-            });
-
-            if (discordId === undefined) continue;
-
-            // Get their guildMemeber object
-            const guildMember = await guild.members
-                .fetch(discordId)
-                .catch(() => discordLogger.logError(guild, `Could not find user <@${discordId}> with id ${discordId}`));
-
-            if (guildMember === undefined) continue;
-
-            // Work out which rank group they fall under
-            let rankGroup = Config.rankGroups.find((group) => group.fromRank >= rank);
-
-            let removedRole;
-            let removedRoleIndex;
-            let addedRole;
-            let addedRoleIndex;
-
-            rankRoles.forEach((rankRole, rankRoleName) => {
-                if (guildMemberHasRole(guildMember, rankRole) && rankRoleName !== rankGroup.name) {
-                    try {
-                        guildMember.roles.remove(rankRole);
-                        removedRole = rankRole;
-                        console.log(`Removed role from ${guildMember.user.tag}: ${rankRoleName}`);
-                    } catch (err) {
-                        console.log(err);
-                    }
-                }
-            });
-
-            // Adds their current rank role if they don't already have it
-            if (!guildMember.roles.cache.some((role) => role.name === rankGroup) && rankGroup !== "") {
-                try {
-                    await guildMember.roles.add(rankRoles[rankGroup]);
-                    addedRole = rankRoles[rankGroup];
-                    console.log(`Added role to ${guildMember.user.tag}: ${rankRoles[rankGroup].name}`);
-                } catch (err) {
-                    console.log(err);
-                }
-            }
-
-            if (removedRole === undefined || addedRole === undefined) continue;
-
-            for (let p = 0; p < rankGroups.length; p++) {
-                if (rankGroups[p][0] === removedRole.name) {
-                    removedRoleIndex = p;
-                }
-            }
-
-            for (let p = 0; p < rankGroups.length; p++) {
-                if (rankGroups[p][0] === addedRole.name) {
-                    addedRoleIndex = p;
-                }
-            }
-
-            if (addedRoleIndex < removedRoleIndex) {
-                if (rankUpdateChannelId !== "" && rankUpdateChannelId !== undefined) {
-                    const rankUpdateChannel = guild.channels.get(rankUpdateChannelId);
-                    if (rankUpdateChannel !== undefined) {
-                        rankUpdateChannel.send(`${guildMember.user.username} has advanced to ${addedRole.name}`);
-                    }
-                }
-            }
+            await updatePlayerRoles(playerIds[i], i + 1, guild, rankRoles);
         }
+
         await module.exports.updateGlobalRoles(guild);
     },
 
@@ -167,7 +179,7 @@ module.exports = {
             });
             if (discordId === undefined) continue;
 
-            // Get their guildMemeber object
+            // Get their guildMember object
             const guildMember = await guild.member.fetch(discordId).catch(() => {
                 if (errorChannelId !== "" && errorChannelId !== undefined) {
                     const errorChannel = guild.channels.get(errorChannelId);
@@ -192,7 +204,7 @@ module.exports = {
             for (const [rankRoleName, rankRole] of Object.entries(globalRankRoles)) {
                 if (guildMember.roles.cache.some((role) => role === rankRole) && rankRole.name !== rankGroup) {
                     try {
-                        await guildMember.roles.remove(rankRole);
+                        await guildMember.roles.remove(rankRole.name);
                         console.log(`Removed role from ${guildMember.user.tag}: ${rankRoleName}`);
                     } catch (err) {
                         console.log(err);
