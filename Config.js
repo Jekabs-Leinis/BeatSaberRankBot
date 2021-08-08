@@ -14,7 +14,8 @@ class Config {
         .map((g) => new RankGroup(g))
         .sort((x, y) => x.fromRank - y.fromRank);
     static scoresaberRegion = rawConfig.scoresaberRegion;
-    static database = rawConfig.database;
+    static databaseUrl = rawConfig.databaseUrl;
+    static databaseName = rawConfig.databaseName;
     static roleMap = new Map(rawConfig.roleMap);
     static errorChannelId = rawConfig.errorChannelId;
     static rankUpdateChannelId = rawConfig.rankUpdateChannelId;

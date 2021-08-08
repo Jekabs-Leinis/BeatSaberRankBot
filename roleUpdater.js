@@ -132,6 +132,7 @@ async function updateRoles(playerIds, guild, rankGroups) {
 module.exports = {
   async autoUpdateRoles(guild) {
     console.log("Running automatic role update.");
+    const players = scoresaberDb.
     const players = await scraper.getPlayers().catch((err) => {
       console.log(err);
     });
