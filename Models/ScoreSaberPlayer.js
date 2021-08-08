@@ -1,23 +1,23 @@
-const _ = require("lodash")
+const _ = require("lodash");
 
 class ScoreSaberPlayer {
-    playerId;
-    playerName;
-    avatar;
-    rank;
-    countryRank;
-    pp;
-    country;
-    role;
-    badges;
-    history;
-    permissions;
-    inactive;
-    banned;
+  playerId;
+  playerName;
+  avatar;
+  rank;
+  countryRank;
+  pp;
+  country;
+  role;
+  badges;
+  history;
+  permissions;
+  inactive;
+  banned;
 
-    constructor(props = {}) {
-        _.assign(this, props);
-    }
+  constructor(props = {}) {
+    _.assign(this, props);
+  }
 }
 
-module.exports = ScoreSaberPlayer
+module.exports = ScoreSaberPlayer;

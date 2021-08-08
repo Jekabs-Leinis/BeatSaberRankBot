@@ -3,39 +3,31 @@ const numPlayersToScrape = require("./config.json").numPlayersToScrape;
 const globalPagesToScrape = require("./config.json").globalPagesToScrape;
 const rp = require("request-promise");
 const cheerio = require("cheerio");
+const Config = require("Config").Config;
 
-const headers = {
-    "user-agent": `${scoresaberRegion.toUpperCase()} Regional Discord Bot`,
-};
+class ScoresaberScrapper {
+    static PLAYERS_PER_PAGE = 50;
+    static HEADERS = {
+        "user-agent": `${Config.scoresaberRegion.toUpperCase()} Regional Discord Bot`,
+    };
 
-async function extractPlayers(html, offset) {
-    const players = [];
-    const $ = cheerio.load(html);
-    const rows = $("tr");
-    rows.each((n) => {
-        if (n !== 0) {
-            players[offset + n - 1] = $("a", this).attr("href");
-        }
-    });
 
-    return players;
-}
 
-module.exports = {
-    async getPlayers() {
+    async getRegionalPlayers() {
         try {
-            const pagesToScrape = Math.ceil(numPlayersToScrape / 50);
+            const pagesToScrape = Math.ceil(Config.numPlayersToScrape / ScoresaberScrapper.PLAYERS_PER_PAGE);
             let players = [];
             for (let i = 0; i < pagesToScrape; i++) {
+
                 const options = {
                     uri:
                         "https://scoresaber.com/global/" +
                         (i + 1) +
-                        `&country=${scoresaberRegion}`,
-                    headers: headers,
+                        `&country=${Config.scoresaberRegion}`,
+                    headers: ScoresaberScrapper.HEADERS,
                 };
                 await rp(options)
-                    .then((html) => (players = extractPlayers(html, 50 * i)))
+                    .then((html) => (players.concat(extractPlayers(html, i * ScoresaberScrapper.PLAYERS_PER_PAGE))))
                     .catch((err) => {
                         console.log(err);
                     });
@@ -46,6 +38,28 @@ module.exports = {
             throw e;
         }
     },
+
+
+
+}
+
+
+
+async function extractPlayers(html) {
+    const players = [];
+    const $ = cheerio.load(html);
+    const rows = $("tr");
+    rows.each((n) => {
+        if (n !== 0) {
+            players[n - 1] = new Player({name : $("a", this).attr("href")}) ;
+        }
+    });
+
+    return players;
+}
+
+module.exports = {
+
 
     async getTopGlobalPlayers() {
         try {
