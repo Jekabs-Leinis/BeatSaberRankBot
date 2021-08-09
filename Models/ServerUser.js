@@ -2,18 +2,7 @@ const _assign = require("lodash/assign");
 
 class ScoreSaberPlayer {
   playerId;
-  playerName;
-  avatar;
-  rank;
-  countryRank;
-  pp;
-  country;
-  role;
-  badges;
-  history;
-  permissions;
-  inactive;
-  banned;
+  discordId;
 
   constructor(props = {}) {
     _assign(this, props);

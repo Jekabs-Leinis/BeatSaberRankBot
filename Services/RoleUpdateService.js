@@ -1,6 +1,7 @@
 const Config = require("../Config");
 const DiscordLogger = require("./DiscordLoggerService");
 const DiscordRepository = require("../Respositories/DiscordRepository");
+const ScoreSaberPlayerRepository = require("../Respositories/ScoreSaberRepository");
 const scoresaberDb = require("../Database").scoresaber;
 
 class RoleUpdateService {
@@ -102,7 +103,8 @@ class RoleUpdateService {
   }
 
   async updateAllRoles() {
-
+      const playerRepository = await new ScoreSaberPlayerRepository();
+      const players = playerRepository.findAll();
   }
 }
 

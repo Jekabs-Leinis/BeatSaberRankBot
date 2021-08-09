@@ -1,4 +1,3 @@
-const Keyv = require("keyv");
 const Config = require("./Config");
 const { MongoClient } = require("mongodb");
 
@@ -30,16 +29,11 @@ class Database {
       return Database.#scoreSaberDb;
     }
 
-    const client = Database.getClient();
+    const client = await Database.getClient();
     Database.#scoreSaberDb = client.db(Config.databaseName);
 
     return Database.#scoreSaberDb;
   }
 }
 
-const scoresaberDb = new Keyv(Config.databaseUrl, { namespace: "scoresaber" });
-scoresaberDb.on("error", (err) => console.error("Keyv connection error:", err));
-
-module.exports = {
-  scoresaber: scoresaberDb,
-};
+module.exports = Database;
